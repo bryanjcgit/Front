@@ -16,7 +16,7 @@ function Form({ callback }) {
     // Función para validar el login
     const validateUser = (event) => {
         event.preventDefault();
-        fetch(`http://localhost:4000/v1/signos/login`, {
+        fetch(`https://back-delta-three.vercel.app/signos/login`, {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password })
@@ -49,7 +49,7 @@ function Form({ callback }) {
             return;
         }
 
-        fetch(`http://localhost:4000/v1/signos/create-user-or-admin`, {
+        fetch(`https://back-delta-three.vercel.app/signos/create-user-or-admin`, {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: newUsername, password: newPassword, role })
@@ -81,7 +81,7 @@ function Form({ callback }) {
             return;
         }
 
-        fetch(`http://localhost:4000/v1/signos/recuperar`, {
+        fetch(`https://back-delta-three.vercel.app/signos/recuperar`, {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: newUsername, newPassword })

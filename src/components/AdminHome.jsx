@@ -17,7 +17,7 @@ function AdminHome({ user }) {
         if (signo !== "0") {
             setSignoEditar(signo);
           
-            fetch(`http://localhost:4000/v1/signos/${signo}`)
+            fetch(`https://back-delta-three.vercel.app/signos/${signo}`)
                 .then(response => response.json())
                 .then(responseData => setTextoEditar(responseData))  
                 .catch(error => console.error('Error al cargar el signo:', error));
@@ -34,7 +34,7 @@ function AdminHome({ user }) {
     const handleClick = (e) => {
         e.preventDefault();
         if (signoEditar && textoEditar) {
-            fetch(`http://localhost:4000/v1/signos/${signoEditar}`, {
+            fetch(`https://back-delta-three.vercel.app/signos/${signoEditar}`, {
                 method: 'PATCH',
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ "textoEditar": textoEditar })  
