@@ -49,10 +49,10 @@ function Form({ callback }) {
             return;
         }
 
-        fetch(`https://back-blond-nine.vercel.app/v1/signos/create-user-or-admin`, {
+        fetch(`https://back-blond-nine.vercel.app/v1/users`, {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: newUsername, password: newPassword, role })
+            body: JSON.stringify({ nombre: newUsername, contraseña: newPassword,})
         })
             .then(res => res.json())
             .then(responseData => {
