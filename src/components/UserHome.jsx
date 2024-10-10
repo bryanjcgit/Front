@@ -18,7 +18,7 @@ function UserHome({ user }) {
     const handleSelect = async (event) => {
         const signo = event.target.value;
         if (signo !== "0") {
-            fetch(`https://back-delta-three.vercel.app/signos/${signo}`)
+            fetch(`https://back-blond-nine.vercel.app/signos/${signo}`)
                 .then(response => response.json())
                 .then(responseData => {
                     setTextoSigno(responseData);

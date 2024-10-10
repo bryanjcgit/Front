@@ -15,7 +15,7 @@ function CrearUsuario({ callback }) {
     // Función para validar el login
     const validateUser = (event) => {
         event.preventDefault();
-        fetch(`https://back-delta-three.vercel.app/signos/login`, {
+        fetch(`https://back-blond-nine.vercel.app/signos/login`, {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password })
@@ -42,7 +42,7 @@ function CrearUsuario({ callback }) {
             return;
         }
 
-        fetch(`https://back-delta-three.vercel.app/signos/create-user-or-admin`, {
+        fetch(`https://back-blond-nine.vercel.app/signos/create-user-or-admin`, {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password, role }) // Incluimos el rol en el body
@@ -76,7 +76,7 @@ function CrearUsuario({ callback }) {
             return;
         }
 
-        fetch(`https://back-delta-three.vercel.app/signos/recuperar`, {
+        fetch(`https://back-blond-nine.vercel.app/signos/recuperar`, {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: newUsername, newPassword })
