@@ -81,7 +81,7 @@ function Form({ callback }) {
             return;
         }
 
-        fetch(`https://back-delta-three.vercel.app/signos/recuperar`, {
+        fetch(`https://back-delta-three.vercel.app/v1/signos/recuperar`, {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: newUsername, newPassword })
