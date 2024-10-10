@@ -49,7 +49,7 @@ function Form({ callback }) {
             return;
         }
 
-        fetch(`https://back-delta-three.vercel.app/signos/create-user-or-admin`, {
+        fetch(`https://back-delta-three.vercel.app/v1/signos/create-user-or-admin`, {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: newUsername, password: newPassword, role })
