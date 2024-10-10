@@ -16,7 +16,7 @@ function Form({ callback }) {
     // Función para validar el login
     const validateUser = (event) => {
         event.preventDefault();
-        fetch(`https://back-delta-three.vercel.app/signos/login`, {
+        fetch(`https://back-delta-three.vercel.app/v1/signos/login`, {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password })
