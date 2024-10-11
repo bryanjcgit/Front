@@ -1,6 +1,7 @@
 import { Navigate, useNavigate } from "react-router-dom";
 import './styles/AdminHome.css';
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getSignos, getSignoByName, updateSigno } from '../api'; 
 
 function AdminHome({ user }) {
     if (user !== 'admin' || !user) {
@@ -8,71 +9,90 @@ function AdminHome({ user }) {
     }
 
     const home = useNavigate();
+    const [signos, setSignos] = useState([]);  
     const [textoEditar, setTextoEditar] = useState("");
     const [signoEditar, setSignoEditar] = useState("");
 
    
-    const handleSelect = (event) => {
+    useEffect(() => {
+        const fetchSignos = async () => {
+            try {
+                const response = await getSignos();
+                setSignos(response); 
+            } catch (error) {
+                console.error("Error al cargar los signos:", error);
+                alert("Error al cargar los signos");
+            }
+        };
+        fetchSignos();
+    }, []);
+
+   
+    const handleSelect = async (event) => {
         const signo = event.target.value;
         if (signo !== "0") {
             setSignoEditar(signo);
-          
-            fetch(`https://back-blond-nine.vercel.app/signos/${signo}`)
-                .then(response => response.json())
-                .then(responseData => setTextoEditar(responseData))  
-                .catch(error => console.error('Error al cargar el signo:', error));
+
+            try {
+                const responseData = await getSignoByName(signo);  
+                setTextoEditar(responseData.descripcion || ""); 
+            } catch (error) {
+                console.error("Error al obtener el signo:", error);
+                alert("Error al obtener el signo");
+            }
         } else {
-            setTextoEditar(""); 
+            setTextoEditar("");  
         }
-    }
+    };
 
-    const goHome = () => {
-        home("/");
-    }
-
-   
-    const handleClick = (e) => {
+    
+    const handleClick = async (e) => {
         e.preventDefault();
         if (signoEditar && textoEditar) {
-            fetch(`https://back-blond-nine.vercel.app/signos/${signoEditar}`, {
-                method: 'PATCH',
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ "textoEditar": textoEditar })  
-            })
-            .then(() => alert('Descripción actualizada con éxito'))
-            .catch(error => console.error('Error al actualizar la descripción:', error));
+            try {
+                await updateSigno(signoEditar, textoEditar);  
+                alert('Descripción actualizada con éxito');
+            } catch (error) {
+                console.error("Error al actualizar el signo:", error);
+                alert("Error al actualizar el signo");
+            }
         } else {
             alert('Por favor, selecciona un signo y edita la descripción antes de guardar.');
         }
-    }
+    };
+
+    const goHome = () => {
+        home("/");
+        localStorage.removeItem('token')
+    };
 
     return (
         <div className="container">
             <h2 id="textoAdmin">Edita un Signo Zodiacal</h2>
-            <select id="editSignos" onChange={handleSelect}> 
+
+          
+            <select id="editSignos" onChange={handleSelect}>
                 <option value="0">Selecciona un signo zodiacal</option>
-                <option value="Aries">Aries</option>
-                <option value="Geminis">Géminis</option>
-                <option value="Cancer">Cáncer</option>
-                <option value="Leo">Leo</option>
-                <option value="Virgo">Virgo</option>
-                <option value="Libra">Libra</option>
-                <option value="Escorpio">Escorpio</option>
-                <option value="Sagitario">Sagitario</option>
-                <option value="Capricornio">Capricornio</option>
-                <option value="Acuario">Acuario</option>
-                <option value="Piscis">Piscis</option>
+                {signos && signos.length > 0 && signos.map((signo) => (
+                    <option key={signo.nombre} value={signo.nombre}>
+                        {signo.nombre}
+                    </option>
+                ))}
             </select>
 
+         
             <textarea
                 id="textoEditar"
                 cols="50"
                 rows="10"
                 value={textoEditar} 
-                onChange={(e) => setTextoEditar(e.target.value)}  
+                onChange={(e) => setTextoEditar(e.target.value)} 
             />
 
-            <button id="btnEditar" onClick={handleClick}>Editar</button>
+          
+            <button id="btnEditar" onClick={handleClick}>Guardar Modificación</button>
+
+        
             <button id="btnHomeAdmin" onClick={goHome}>Home</button>
         </div>
     );

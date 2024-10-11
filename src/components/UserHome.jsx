@@ -1,29 +1,48 @@
 import { Navigate, useNavigate } from "react-router-dom";
 import './styles/UserHome.css';
 import TextSigno from "./TextSigno.jsx";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getSignoByName, getSignos } from "../api"; 
 
 function UserHome({ user }) {
     if (user !== "user" || !user) {
-        return <Navigate to="/" />
+        return <Navigate to="/" />;
     }
+
     const home = useNavigate();
     const [textoSigno, setTextoSigno] = useState('');
+    const [signos, setSignos] = useState([]); 
     const [selectedType, setSelectedType] = useState('');
+
+    
+    useEffect(() => {
+        const loadSignos = async () => {
+            try {
+                const responseData = await getSignos(); 
+                setSignos(responseData);  
+            } catch (error) {
+                console.error('Error al cargar los signos:', error);
+                alert('Error al cargar los signos');
+            }
+        };
+        loadSignos();
+    }, []);
 
     const goHome = () => {
         home("/");
+        localStorage.removeItem('token')
     }
 
     const handleSelect = async (event) => {
         const signo = event.target.value;
         if (signo !== "0") {
-            fetch(`https://back-blond-nine.vercel.app/signos/${signo}`)
-                .then(response => response.json())
-                .then(responseData => {
-                    setTextoSigno(responseData);
-                })
-                .catch(err => console.error('Error al cargar la descripción del signo:', err));
+            try {
+                const responseData = await getSignoByName(signo); 
+                setTextoSigno(responseData.descripcion || '');  
+            } catch (error) {
+                console.error('Error al cargar la descripción del signo:', error);
+                alert('Error al cargar la descripción del signo');
+            }
         } else {
             setTextoSigno('');
         }
@@ -35,26 +54,21 @@ function UserHome({ user }) {
 
     return (
         <div className="container">
-
             <div id="txtSeleccionPage"><h3>Selecciona tu signo zodiacal</h3></div>
+
             <select id="selectSignos" onChange={handleSelect}>
-                <option value="0">Seleciona un signo zodiacal</option>
-                <option value="Aries">Aries</option>
-                <option value="Geminis">Géminis</option>
-                <option value="Cancer">Cáncer</option>
-                <option value="Leo">Leo</option>
-                <option value="Virgo">Virgo</option>
-                <option value="Libra">Libra</option>
-                <option value="Escorpio">Escorpio</option>
-                <option value="Sagitario">Sagitario</option>
-                <option value="Capricornio">Capricornio</option>
-                <option value="Acuario">Acuario</option>
-                <option value="Piscis">Piscis</option>
+                <option value="0">Selecciona un signo zodiacal</option>
+                {signos.map(signo => (
+                    <option key={signo.nombre} value={signo.nombre}>
+                        {signo.nombre}
+                    </option>
+                ))}
             </select>
 
-
+          
             <TextSigno texto={textoSigno} />
 
+          
             <div style={{ marginTop: 80 }}>
                 <h3>Selecciona una opción</h3>
                 <select id="selectType" onChange={handleTypeSelect}>
@@ -64,10 +78,10 @@ function UserHome({ user }) {
                     <option value="Niño">Niño</option>
                 </select>
 
-
                 {selectedType && <p>Has seleccionado: {selectedType}</p>}
             </div>
 
+         
             <button id="btnHome" onClick={goHome}>Home</button>
         </div>
     )

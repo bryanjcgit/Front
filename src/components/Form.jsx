@@ -1,71 +1,56 @@
 import './styles/Form.css';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { login, createUser, changePassword } from '../api';
 
 function Form({ callback }) {
     const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");   
+    const [password, setPassword] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [newUsername, setNewUsername] = useState("");
     const [newPassword, setNewPassword] = useState("");
-    const [role, setRole] = useState("user"); // Nuevo estado para el rol
-    const [showCreateUser, setShowCreateUser] = useState(false); // Estado para el formulario de creación de usuario
+    const [role, setRole] = useState("USER_ROLE");
+    const [showCreateUser, setShowCreateUser] = useState(false);
 
     const goTo = useNavigate();
 
-    // Función para validar el login
-    const validateUser = (event) => {
+    const validateUser = async (event) => {
         event.preventDefault();
-        fetch(`https://back-blond-nine.vercel.app/v1/signos/login`, {
-            method: 'POST',
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password })
-        })
-            .then(res => res.json())
-            .then(responseData => {
-                if (responseData.resultado === 'user') {
-                    callback("user");
-                    goTo("/userHome");
-                } else if (responseData.resultado === 'admin') {
-                    callback("admin");
-                    goTo("/adminHome");
-                } else {
-                    alert('Usuario o contraseña incorrectos.');
-                }
-            })
-            .catch(error => {
-                console.error(error);
-                alert('Error al validar el usuario.');
-            });
+        const responseData = await login(username, password);
+
+        if (responseData.token) {
+            localStorage.setItem("token", responseData.token);
+
+            const rol = responseData.usuario.rol;
+            if (rol === 'USER_ROLE') {
+                callback("user");
+                goTo("/userHome");
+            } else if (rol === 'ADMIN_ROLE') {
+                callback("admin");
+                goTo("/adminHome");
+            }
+        } else {
+            alert('Usuario o contraseña incorrectos.');
+        }
     };
 
-    // Nueva función para crear un usuario o admin
-    const handleCreateUserOrAdmin = (event) => {
+    const handleCreateUserOrAdmin = async (event) => {
         event.preventDefault();
 
-        // Validación simple
         if (!newUsername || !newPassword) {
             alert('Por favor, ingrese un nombre de usuario y contraseña.');
             return;
         }
 
-        fetch(`https://back-blond-nine.vercel.app/v1/users`, {
-            method: 'POST',
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nombre: newUsername, contraseña: newPassword,})
-        })
-            .then(res => res.json())
-            .then(responseData => {
-                alert(responseData.message);
-                if (responseData.success) {
-                    closeCreateUserForm(); // Cierra el formulario de crear usuario
-                }
-            })
-            .catch(error => {
-                console.log(error);
-                alert('Error al crear el usuario o admin.');
-            });
+        const responseData = await createUser(newUsername, newPassword, role);
+        if (responseData.message) {
+            alert(responseData.message);
+            closeCreateUserForm();
+        } else {           
+            alert(`${responseData.msg}`);
+        }
     };
+
 
     const openChangePasswordModal = () => {
         setShowModal(true);
@@ -75,31 +60,27 @@ function Form({ callback }) {
         setShowModal(false);
     };
 
-    const changePassword = () => {
+    const handleChangePassword = async (event) => {
+        event.preventDefault();
+
         if (!newUsername || !newPassword) {
             alert('Por favor, ingrese un nombre de usuario y una nueva contraseña.');
             return;
         }
 
-        fetch(`https://back-blond-nine.vercel.app/v1/signos/recuperar`, {
-            method: 'POST',
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: newUsername, newPassword })
-        })
-            .then(res => res.json())
-            .then(responseData => {
-                alert(responseData.message);
-                if (responseData.userType === 'admin') {
-                    goTo("/adminHome");
-                } else if (responseData.userType === 'user') {
-                    goTo("/userHome");
-                }
-                closeModal();
-            })
-            .catch(error => {
-                console.error(error);
+        try {
+            const responseData = await changePassword(newUsername, newPassword);
+
+            if (responseData.msg) {
+                alert(responseData.msg);
+                closeModal(); 
+            } else {
                 alert('Error al cambiar la contraseña.');
-            });
+            }
+        } catch (error) {
+            console.error('Error al cambiar la contraseña:', error);
+            alert('Error al cambiar la contraseña.');
+        }
     };
 
     const openCreateUserForm = () => {
@@ -108,10 +89,9 @@ function Form({ callback }) {
 
     const closeCreateUserForm = () => {
         setShowCreateUser(false);
-        setNewUsername(""); // Limpiar el input
-        setNewPassword(""); // Limpiar el input
+        setNewUsername("");
+        setNewPassword("");
     };
-
     return (
         <>
             <form onSubmit={validateUser}>
@@ -145,7 +125,7 @@ function Form({ callback }) {
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
                         /><br />
-                        <button onClick={changePassword}>Guardar Nueva Contraseña</button>
+                        <button onClick={handleChangePassword}>Guardar Nueva Contraseña</button>
                     </div>
                 </div>
             )}
@@ -159,14 +139,13 @@ function Form({ callback }) {
                         <input type="text" className="entry" onChange={(e) => setNewUsername(e.target.value)} /><br />
                         <h4 className="txt">Contraseña</h4>
                         <input type="password" className="entry" onChange={(e) => setNewPassword(e.target.value)} /><br />
-                        
-                        {/* Selector para elegir el rol */}
+
                         <h4 className="txt">Rol</h4>
                         <select value={role} onChange={(e) => setRole(e.target.value)}>
-                            <option value="user">Usuario</option>
-                            <option value="admin">Administrador</option>
+                            <option value="USER_ROLE">Usuario</option>
+                            <option value="ADMIN_ROLE">Administrador</option>
                         </select><br />
-                        
+
                         <button onClick={handleCreateUserOrAdmin}>Crear Cuenta</button>
                     </div>
                 </div>
